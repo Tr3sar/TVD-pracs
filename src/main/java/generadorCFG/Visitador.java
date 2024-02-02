@@ -53,6 +53,12 @@ public class Visitador extends ModifierVisitor<CFG>
 
 		NodoCFG nodoIf = cfg.getNodoActual();
 
+		if (cfg.getNumIfs() == 0) {
+			cfg.increaseNumIfs();
+		} else {
+			cfg.addNodoAnterior(nodoIf);
+		}
+
 		is.getThenStmt().accept(this, cfg);
 
 		NodoCFG nodoThen = cfg.getNodoActual();
@@ -61,7 +67,6 @@ public class Visitador extends ModifierVisitor<CFG>
 		NodoCFG nodoElse = null;
 
 		if (!is.hasElseBranch()) {
-			cfg.getNodoActual();
 			cfg.addNodoAnterior(nodoThen);
 			cfg.setEsSecuencial(false);
 		} else {
@@ -73,6 +78,8 @@ public class Visitador extends ModifierVisitor<CFG>
 			cfg.setEsSecuencial(false);
 			cfg.decreaseElsesLeft();
 		}
+
+		cfg.decreaseNumIfs();
 
 		return is;
 	}
@@ -87,8 +94,18 @@ public class Visitador extends ModifierVisitor<CFG>
 
 		es.getBody().accept(this, cfg);
 
-		NodoCFG nodoFinalCuerpo = cfg.getNodoActual();
-		cfg.crearArcoDirigido(nodoFinalCuerpo, nodoCondicion);
+		//NodoCFG nodoFinalCuerpo = cfg.getNodoActual();
+
+		if (cfg.getEsSecuencial()) {
+			cfg.crearArcoDirigido(cfg.getNodoAnterior(), nodoCondicion);
+		} else {
+			for(NodoCFG nodoAnterior: cfg.getNodosAnteriores()) {
+				cfg.crearArcoDirigido(nodoAnterior, nodoCondicion);
+			}
+
+			cfg.setEsSecuencial(true);
+			cfg.removeNodosAnteriores();
+		}
 
 		cfg.setNodoAnterior(nodoCondicion);
 

@@ -9,6 +9,7 @@ public class CFG {
 
 	private List<NodoCFG> nodosAnteriores = new ArrayList<NodoCFG>();
 	private int numElsesLeft = 0;
+	private int numIfs = 0;
 	
 	private int idActual = 0;
 	private NodoCFG nodoAnterior = null;
@@ -56,7 +57,9 @@ public class CFG {
 		if (!this.esSecuencial && this.numElsesLeft == 0) {
 			for(NodoCFG nodoAnteriorLista: nodosAnteriores) {
 				ArcoCFG arcoLista = new ArcoCFG(nodoAnteriorLista, nodoActual);
-				arcos.add(arcoLista);
+				if (!existeArco(arcoLista)) {
+					arcos.add(arcoLista);
+				}
 			}
 			this.esSecuencial = true;
 			this.nodosAnteriores.clear();
@@ -67,8 +70,18 @@ public class CFG {
 		idActual++;
 		NodoCFG nodofinal = new NodoCFG(idActual,"Stop");
 		ArcoCFG arcofinal = new ArcoCFG(nodoAnterior,nodofinal);
-
 		arcos.add(arcofinal);
+
+		if (!this.esSecuencial && this.numElsesLeft == 0) {
+			for(NodoCFG nodoAnteriorLista: nodosAnteriores) {
+				ArcoCFG arcoLista = new ArcoCFG(nodoAnteriorLista, nodofinal);
+				if (!existeArco(arcoLista)) {
+					arcos.add(arcoLista);
+				}
+			}
+			this.esSecuencial = true;
+			this.nodosAnteriores.clear();
+		}
 	}
 
 	
@@ -105,18 +118,44 @@ public class CFG {
 	}
 
 	public void addNodoAnterior(NodoCFG nodo) {
-		if (!this.nodosAnteriores.contains(nodo) && !this.nodoAnterior.equals(nodo)) {
+		if (!this.nodosAnteriores.contains(nodo)) {
 			this.nodosAnteriores.add(nodo);
 		}
+	}
+
+	public NodoCFG getNodoAnterior() {
+		return this.nodoAnterior;
+	}
+
+	public List<NodoCFG> getNodosAnteriores() {
+		return this.nodosAnteriores;
+	}
+
+	public void removeNodosAnteriores() {
+		this.nodosAnteriores.clear();
 	}
 
 	public void setEsSecuencial(boolean esSecuencial) {
 		this.esSecuencial = esSecuencial;
 	}
+	public boolean getEsSecuencial() {
+		return this.esSecuencial;
+	}
 
 	public void crearArcoDirigido(NodoCFG nodoInicial, NodoCFG nodoFinal) {
 		ArcoCFG arco = new ArcoCFG(nodoInicial, nodoFinal);
-		arcos.add(arco);
+		if (!existeArco(arco)) {
+			arcos.add(arco);
+		}
+	}
+
+	private boolean existeArco(ArcoCFG nuevoArco) {
+		for (ArcoCFG arco : arcos) {
+			if (arco.nodoInicial.id == nuevoArco.nodoInicial.id && arco.nodoFinal.id == nuevoArco.nodoFinal.id) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void increaseElsesLeft() {
@@ -125,6 +164,18 @@ public class CFG {
 
 	public void decreaseElsesLeft() {
 		this.numElsesLeft--;
+	}
+
+	public void increaseNumIfs() {
+		this.numIfs++;
+	}
+
+	public void decreaseNumIfs() {
+		this.numIfs--;
+	}
+
+	public int getNumIfs() {
+		return this.numIfs;
 	}
 
 

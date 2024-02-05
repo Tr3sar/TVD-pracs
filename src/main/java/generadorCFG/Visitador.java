@@ -53,10 +53,8 @@ public class Visitador extends ModifierVisitor<CFG>
 
 		NodoCFG nodoIf = cfg.getNodoActual();
 
-		if (cfg.getNumIfs() == 0) {
-			cfg.increaseNumIfs();
-		} else {
-			cfg.addNodoAnterior(nodoIf);
+		if (cfg.esPrimerIf()) {
+			cfg.setEsPrimerIf(false);
 		}
 
 		is.getThenStmt().accept(this, cfg);
@@ -67,19 +65,27 @@ public class Visitador extends ModifierVisitor<CFG>
 		NodoCFG nodoElse = null;
 
 		if (!is.hasElseBranch()) {
+			if (!cfg.esPrimerIf()) {
+				cfg.addNodoAnterior(nodoIf);
+			}
 			cfg.addNodoAnterior(nodoThen);
 			cfg.setEsSecuencial(false);
 		} else {
 			cfg.increaseElsesLeft();
 			is.getElseStmt().get().accept(this, cfg);
 			nodoElse = cfg.getNodoActual();
+
+			if (nodoElse.equals(nodoThen)) {
+				nodoElse = nodoIf;
+			}
+
 			cfg.addNodoAnterior(nodoThen);
 			cfg.addNodoAnterior(nodoElse);
 			cfg.setEsSecuencial(false);
 			cfg.decreaseElsesLeft();
 		}
 
-		cfg.decreaseNumIfs();
+		cfg.setEsPrimerIf(true);
 
 		return is;
 	}
@@ -147,15 +153,21 @@ public class Visitador extends ModifierVisitor<CFG>
 			for(int i = 0; i < bloque.getStatements().size(); i++) {
 
 				Statement instruccion = bloque.getStatement(i);
+				int idPreAccept = cfg.getIdActual();
 				instruccion.accept(this, cfg);
 
+				int idPostAccept = cfg.getIdActual();
+				NodoCFG nodoCondicion = cfg.getNodoActual();
+
+				if (idPostAccept != idPreAccept + 1) {
+					nodoCondicion = cfg.getNodoById(idPreAccept + 1);
+				}
+
 				if (i == 0) {
-					nodoInicial = cfg.getNodoActual();
+					nodoInicial = nodoCondicion;
 				}
 			}
 		}
-
-		//ds.getBody().accept(this, cfg);
 
 		cfg.crearNodo(ds.getCondition());
 		NodoCFG nodoCondicion = cfg.getNodoActual();

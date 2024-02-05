@@ -5,11 +5,11 @@ public class PruebaCorreo_3 {
     {
         int x=1;
 
-        do if (x>0) {x++;}
+        do {
+            if (x>0) {x++;}
 
-        else {x--;}
-
-        while (x>1);
+            else {x--;}
+        } while (x>1);
 
         x=0;
     }

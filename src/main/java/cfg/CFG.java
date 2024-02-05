@@ -9,7 +9,7 @@ public class CFG {
 
 	private List<NodoCFG> nodosAnteriores = new ArrayList<NodoCFG>();
 	private int numElsesLeft = 0;
-	private int numIfs = 0;
+	private boolean esPrimerIf = false;
 	
 	private int idActual = 0;
 	private NodoCFG nodoAnterior = null;
@@ -166,17 +166,27 @@ public class CFG {
 		this.numElsesLeft--;
 	}
 
-	public void increaseNumIfs() {
-		this.numIfs++;
+	public void setEsPrimerIf(boolean esPrimerIf) {
+
+		this.esPrimerIf = esPrimerIf;
+	}
+	public boolean esPrimerIf() {
+		return this.esPrimerIf;
 	}
 
-	public void decreaseNumIfs() {
-		this.numIfs--;
+	public int getIdActual() {
+		return this.idActual;
 	}
 
-	public int getNumIfs() {
-		return this.numIfs;
+	public NodoCFG getNodoById(int id){
+		for(ArcoCFG arco: this.arcos) {
+			if (arco.nodoInicial.id == id) {
+				return arco.nodoInicial;
+			} else if (arco.nodoFinal.id == id) {
+				return arco.nodoFinal;
+			}
+		}
+
+		return null;
 	}
-
-
 }
